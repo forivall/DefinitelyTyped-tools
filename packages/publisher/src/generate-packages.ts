@@ -62,10 +62,13 @@ export default async function generatePackages(
 
   for (const { pkg, version } of changedPackages.changedTypings) {
     await generateTypingPackage(pkg, allPackages, version, dt);
+    let outputTgz: string | undefined;
     if (tgz) {
-      await writeTgz(outputDirectory(pkg), `${outputDirectory(pkg)}.tgz`);
+      const outputDir = outputDirectory(pkg);
+      outputTgz = path.join(path.dirname(outputDir), `types-${pkg.name}-${version}.tgz`);
+      await writeTgz(outputDir, outputTgz);
     }
-    log(` * ${pkg.desc}`);
+    log(` * ${pkg.desc}` + (outputTgz ? ` -> ${path.relative('.', outputTgz)}` : ''));
   }
   log("## Generating deprecated packages");
   for (const pkg of changedPackages.changedNotNeededPackages) {

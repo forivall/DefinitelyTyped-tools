@@ -42,7 +42,8 @@ export default async function publishPackages(
     log("=== Publishing packages ===");
   }
 
-  const client = await NpmPublishClient.create(await getSecret(Secret.NPM_TOKEN), undefined);
+  const secret = dry ? 'DRY_RUN' : await getSecret(Secret.NPM_TOKEN);
+  const client = await NpmPublishClient.create(secret, undefined);
 
   for (const cp of changedPackages.changedTypings) {
     log(`Publishing ${cp.pkg.desc}...`);
@@ -72,7 +73,7 @@ export default async function publishPackages(
         fetcher
       )) as { items: { number: number }[] };
       let latestPr = 0;
-      for (const pr of prs.items) {
+      for (const pr of (prs.items ?? [])) {
         if (pr.number > latestPr) {
           latestPr = pr.number;
         }
