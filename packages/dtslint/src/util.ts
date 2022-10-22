@@ -2,6 +2,7 @@ import { ESLintUtils } from "@typescript-eslint/utils";
 import assert = require("assert");
 import { pathExists, readFile } from "fs-extra";
 import { basename, dirname, join } from "path";
+import pMap from 'p-map';
 import stripJsonComments = require("strip-json-comments");
 import * as ts from "typescript";
 
@@ -82,15 +83,12 @@ export function assertDefined<T>(a: T | undefined): T {
   return a;
 }
 
-export async function mapDefinedAsync<T, U>(arr: Iterable<T>, mapper: (t: T) => Promise<U | undefined>): Promise<U[]> {
-  const out = [];
-  for (const a of arr) {
-    const res = await mapper(a);
-    if (res !== undefined) {
-      out.push(res);
-    }
-  }
-  return out;
+export async function mapDefinedAsync<T, U>(
+  arr: Iterable<T>,
+  mapper: (t: T) => Promise<U | undefined>,
+  options: pMap.Options = { concurrency: 1 }
+): Promise<U[]> {
+  return (await pMap(arr, mapper, options)).filter((res): res is Exclude<U, undefined> => res !== undefined);
 }
 
 export function isMainFile(fileName: string, allowNested: boolean) {

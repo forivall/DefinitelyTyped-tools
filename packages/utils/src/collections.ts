@@ -1,3 +1,5 @@
+import pMap from 'p-map';
+
 export function initArray<T>(length: number, makeElement: (i: number) => T): T[] {
   const arr = new Array(length);
   for (let i = 0; i < length; i++) {
@@ -25,15 +27,12 @@ export function mapDefined<T, U>(arr: Iterable<T>, mapper: (t: T) => U | undefin
   return out;
 }
 
-export async function mapDefinedAsync<T, U>(arr: Iterable<T>, mapper: (t: T) => Promise<U | undefined>): Promise<U[]> {
-  const out = [];
-  for (const a of arr) {
-    const res = await mapper(a);
-    if (res !== undefined) {
-      out.push(res);
-    }
-  }
-  return out;
+export async function mapDefinedAsync<T, U>(
+  arr: Iterable<T>,
+  mapper: (t: T) => Promise<U | undefined>,
+  options: pMap.Options = { concurrency: 1 }
+): Promise<U[]> {
+  return (await pMap(arr, mapper, options)).filter((res): res is Exclude<U, undefined> => res !== undefined);
 }
 
 export function* mapIterable<T, U>(inputs: Iterable<T>, mapper: (t: T) => U): Iterable<U> {
@@ -143,7 +142,7 @@ export function append<T>(to: T[] | undefined, value: T | undefined): T[] | unde
 /**
  * Tests whether a value is an array.
  */
-export function isArray(value: any): value is readonly {}[] {
+export function isArray(value: any): value is readonly any[] {
   return Array.isArray ? Array.isArray(value) : value instanceof Array;
 }
 

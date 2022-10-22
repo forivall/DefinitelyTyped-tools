@@ -69,7 +69,7 @@ async function computeChangedPackages(allPackages: AllPackages, log: LoggerWithE
       return { pkg, version, latestVersion };
     }
     return undefined;
-  });
+  }, { concurrency: 10 });
   log.info("# Computing deprecated packages...");
   const changedNotNeededPackages = await mapDefinedAsync(allPackages.allNotNeeded(), async (pkg) => {
     if (!(await isAlreadyDeprecated(pkg, log))) {
