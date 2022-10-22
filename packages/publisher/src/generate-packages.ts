@@ -88,7 +88,13 @@ async function generateTypingPackage(
 
   await writeCommonOutputs(typing, createPackageJSON(typing, version, packages), createReadme(typing, packageFS));
   await Promise.all(
-    typing.files.map(async (file) => writeFile(await outputFilePath(typing, file), packageFS.readFile(file)))
+    typing.files.map(async (file) => {
+      try {
+        return await writeFile(await outputFilePath(typing, file), packageFS.readFile(file))
+      } catch (err) {
+        console.error(err);
+      }
+    })
   );
 }
 
